@@ -93,7 +93,7 @@ async function handlePullRequest({ payload }: any) {
             } catch (execError) {
                 // spectra scan returns exit code 1 if vulnerabilities are found. We ignore the error and read the file anyway.
             }
-            const resultData = await fs.readFile(path.join(process.cwd(), 'spectra-out', 'spectra_findings.json'), 'utf-8');
+            const resultData = await fs.readFile(path.join(process.cwd(), 'spectra-out', 'spectra-findings.json'), 'utf-8');
             const result = JSON.parse(resultData);
             findings = result.findings || [];
             aggregateQrs = result.aggregate_qrs || 0;
