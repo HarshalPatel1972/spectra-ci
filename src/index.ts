@@ -88,7 +88,7 @@ async function handlePullRequest({ payload }: any) {
         let aggregateQrs = 0;
         
         try {
-            const { stdout } = await execAsync(`spectra scan "${tempDir}" --output json --quiet`);
+            const { stdout } = await execAsync(`chmod +x ./spectra-linux-amd64 && ./spectra-linux-amd64 scan "${tempDir}" --output json --quiet`);
             const result = JSON.parse(stdout);
             findings = result.findings || [];
             aggregateQrs = result.aggregate_qrs || 0;
