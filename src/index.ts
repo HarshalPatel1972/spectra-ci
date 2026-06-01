@@ -88,18 +88,13 @@ async function handlePullRequest({ payload }: any) {
         let aggregateQrs = 0;
         
         try {
-            const { stdout } = await execAsync(`chmod +x ./spectra-linux-amd64 && ./spectra-linux-amd64 scan "${tempDir}" --output json --quiet`);
-            const result = JSON.parse(stdout);
+            await execAsync(`chmod +x ./spectra-linux-amd64 && ./spectra-linux-amd64 scan "${tempDir}" --output json --quiet`);
+            const resultData = await fs.readFile(path.join(process.cwd(), 'spectra-out', 'spectra_findings.json'), 'utf-8');
+            const result = JSON.parse(resultData);
             findings = result.findings || [];
             aggregateQrs = result.aggregate_qrs || 0;
         } catch (error: any) {
-            if (error.stdout) {
-                try {
-                    const result = JSON.parse(error.stdout);
-                    findings = result.findings || [];
-                    aggregateQrs = result.aggregate_qrs || 0;
-                } catch(e) {}
-            }
+            console.error('Error during scan or parse:', error);
         }
 
         // 4. Post comment if findings exist
