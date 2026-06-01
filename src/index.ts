@@ -88,13 +88,17 @@ async function handlePullRequest({ payload }: any) {
         let aggregateQrs = 0;
         
         try {
-            await execAsync(`chmod +x ./spectra-linux-amd64 && ./spectra-linux-amd64 scan "${tempDir}" --output json --quiet`);
+            try {
+                await execAsync(`chmod +x ./spectra-linux-amd64 && ./spectra-linux-amd64 scan "${tempDir}" --output json --quiet`);
+            } catch (execError) {
+                // spectra scan returns exit code 1 if vulnerabilities are found. We ignore the error and read the file anyway.
+            }
             const resultData = await fs.readFile(path.join(process.cwd(), 'spectra-out', 'spectra_findings.json'), 'utf-8');
             const result = JSON.parse(resultData);
             findings = result.findings || [];
             aggregateQrs = result.aggregate_qrs || 0;
         } catch (error: any) {
-            console.error('Error during scan or parse:', error);
+            console.error('Error during parse:', error);
         }
 
         // 4. Post comment if findings exist
