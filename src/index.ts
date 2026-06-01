@@ -50,7 +50,7 @@ async function handlePullRequest({ payload }: any) {
     const pull_number = payload.pull_request.number;
     const headSha = payload.pull_request.head.sha;
 
-    console.log(\`Processing PR #\${pull_number} for \${owner}/\${repo}\`);
+    console.log(`Processing PR #${pull_number} for ${owner}/${repo}`);
 
     // 1. Fetch changed files
     const { data: files } = await octokit.pulls.listFiles({
@@ -59,7 +59,7 @@ async function handlePullRequest({ payload }: any) {
         pull_number,
     });
 
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), \`spectra-ci-\${pull_number}-\`));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `spectra-ci-${pull_number}-`));
 
     try {
         // 2. Download and save changed files to temp directory
@@ -88,7 +88,7 @@ async function handlePullRequest({ payload }: any) {
         let aggregateQrs = 0;
         
         try {
-            const { stdout } = await execAsync(\`spectra scan "\${tempDir}" --output json --quiet\`);
+            const { stdout } = await execAsync(`spectra scan "${tempDir}" --output json --quiet`);
             const result = JSON.parse(stdout);
             findings = result.findings || [];
             aggregateQrs = result.aggregate_qrs || 0;
@@ -119,26 +119,26 @@ async function handlePullRequest({ payload }: any) {
 }
 
 async function postPRComment(owner: string, repo: string, pull_number: number, commit_id: string, findings: any[], aggregateQrs: number) {
-    let markdown = \`## 🛡️ Spectra Cryptographic Security Scan\\n\\n\`;
-    markdown += \`**Aggregate Quantum Risk Score (QRS):** \${aggregateQrs}/100\\n\\n\`;
+    let markdown = `## 🛡️ Spectra Cryptographic Security Scan\n\n`;
+    markdown += `**Aggregate Quantum Risk Score (QRS):** ${aggregateQrs}/100\n\n`;
     
     if (aggregateQrs >= 80) {
-        markdown += \`> [!CAUTION]\\n> **CRITICAL RISK DETECTED.** This PR introduces cryptography that is immediately vulnerable to harvest-now-decrypt-later attacks.\\n\\n\`;
+        markdown += `> [!CAUTION]\n> **CRITICAL RISK DETECTED.** This PR introduces cryptography that is immediately vulnerable to harvest-now-decrypt-later attacks.\n\n`;
     } else if (aggregateQrs >= 60) {
-        markdown += \`> [!WARNING]\\n> **HIGH RISK DETECTED.** This PR introduces legacy cryptography. Migration to PQC is highly recommended.\\n\\n\`;
+        markdown += `> [!WARNING]\n> **HIGH RISK DETECTED.** This PR introduces legacy cryptography. Migration to PQC is highly recommended.\n\n`;
     }
 
-    markdown += \`### Findings\\n\\n\`;
-    markdown += \`| File | Algorithm | QRS | Risk | Migration Effort |\\n\`;
-    markdown += \`|---|---|---|---|---|\\n\`;
+    markdown += `### Findings\n\n`;
+    markdown += `| File | Algorithm | QRS | Risk | Migration Effort |\n`;
+    markdown += `|---|---|---|---|---|\n`;
 
     for (const f of findings) {
         // Strip tempDir path from file_path
         const relativePath = f.file_path.split(path.sep).slice(1).join('/');
-        markdown += \`| \`\${relativePath}:\${f.line_number}\` | **\${f.algorithm}** | \${f.qrs} | \${f.risk_band} | \${f.migration_effort} |\\n\`;
+        markdown += `| \`${relativePath}:${f.line_number}\` | **${f.algorithm}** | ${f.qrs} | ${f.risk_band} | ${f.migration_effort} |\n`;
     }
 
-    markdown += \`\\n---\\n*Scanned automatically by [Spectra CI](https://spectra.tools)*\`;
+    markdown += `\n---\n*Scanned automatically by [Spectra CI](https://spectra.tools)*`;
 
     await octokit.issues.createComment({
         owner,
@@ -149,5 +149,5 @@ async function postPRComment(owner: string, repo: string, pull_number: number, c
 }
 
 app.listen(port, () => {
-    console.log(\`Spectra CI webhook server listening on port \${port}\`);
+    console.log(`Spectra CI webhook server listening on port ${port}`);
 });
