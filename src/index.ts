@@ -23,8 +23,8 @@ const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
 
-// Middleware to parse GitHub webhook payloads
-app.use(express.json());
+// Middleware to parse GitHub webhook payloads as raw text (required for signature validation)
+app.use(express.text({type: 'application/json'}));
 
 app.post('/api/webhook', async (req, res) => {
     try {
